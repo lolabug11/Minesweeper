@@ -28,15 +28,13 @@ class Board:
         print(f"Game over there was a bomb at {bomb_cord}")
 
     def propagate_tiles(self, tile_clicked:tuple):
-        self.player_facing_board[tile_clicked[0],tile_clicked[1]] = self.board[tile_clicked[0],tile_clicked[1]]
+        self.player_facing_board[tile_clicked[0],tile_clicked[1]] = self.board[tile_clicked[0],tile_clicked[1]].bombs_nearby
 
     def click(self,tile_cords:tuple):
         if self.turn_number == 0:
             self._gen_board(tile_cords)
-            self.propagate_tiles(tile_cords)
-            self.turn_number += 1
-        else:
-            ...
+        self.propagate_tiles(tile_cords)
+        self.turn_number += 1
 
     @staticmethod
     def bombs_nearby(bomb_cords:list, cord_of_tile:tuple):
@@ -109,22 +107,22 @@ class Board:
 
         def gen_player_facing_board():
             player_board_list = []
-            for x in range(self.rows - 1):
+            for x in range(self.rows):
                 row_list = []
-                for y in range(self.cols - 1):
+                for y in range(self.cols):
                     row_list.append("~")
                 player_board_list.append(row_list)
-            return np.array(player_board_list)
+            return np.array(player_board_list,dtype=object)
 
         self.player_facing_board = gen_player_facing_board()
         self.bomb_pos = None
         self.turn_number = 0
+        self.game_over = False
 
     def board_to_string(self,mode:int):
-        board_list = []
         if mode == 1:
             return str(self.player_facing_board)
-        elif mode == 2:
+        else:# mode == 2
             return_list = []
             for row in self.board:
                 row_list = []
@@ -139,10 +137,12 @@ class Board:
             return_array = np.array(return_list)
             return str(return_array)
 
+
     def __str__(self):
         return self.board_to_string(1)
 board1 = Board(1)
-board1.click((1,1))
-# print(board1)
-print(board1.board_to_string(1))
-print(board1.board_to_string(2))
+
+for x in range(8):
+    for y in range(8):
+        board1.click((x,y))
+        print(board1)
