@@ -27,8 +27,23 @@ class Board:
     def bomb_clicked(self,bomb_cord:tuple):
         print(f"Game over there was a bomb at {bomb_cord}")
 
+    def reveal_tile(self,tile:tuple):
+        if self.board[tile[0],tile[1]].bombs_nearby != -1:
+            self.player_facing_board[tile[0],tile[1]] = self.board[tile[0],tile[1]].bombs_nearby
+
     def propagate_tiles(self, tile_clicked:tuple):
-        self.player_facing_board[tile_clicked[0],tile_clicked[1]] = self.board[tile_clicked[0],tile_clicked[1]].bombs_nearby
+        tile_to_check = self.board[tile_clicked[0],tile_clicked[1]]
+        tile_to_check.isClicked = True
+        is_zero = tile_to_check.bombs_nearby == 0
+        self.reveal_tile(tile_clicked)
+        for dir in Board.directions:
+            tile_in_dir = (tile_clicked[0] + dir[0], tile_clicked[1] + dir[1])
+            in_bounds =  tile_in_dir[0] >= 0 and tile_in_dir[0] <= self.rows - 1 and tile_in_dir[1] >= 0 and tile_in_dir[1] <= self.cols - 1 
+            if in_bounds:
+                if is_zero and not self.board[tile_in_dir[0],tile_in_dir[1]].isClicked:
+                    self.propagate_tiles(tile_in_dir)
+                    
+                
 
     def click(self,tile_cords:tuple):
         if self.turn_number == 0:
@@ -119,7 +134,7 @@ class Board:
         self.turn_number = 0
         self.game_over = False
 
-    def board_to_string(self,mode:int):
+    def board_to_string(self,mode:int = 1):
         if mode == 1:
             return str(self.player_facing_board)
         else:# mode == 2
@@ -128,7 +143,7 @@ class Board:
                 row_list = []
                 for tile in row:
                     if tile.isClicked:
-                        row_list.append(tile.distance_from_bomb)
+                        row_list.append(tile.bombs_nearby)
                     elif tile.isFlagged:
                         row_list.append("⚐")
                     else:
@@ -141,8 +156,6 @@ class Board:
     def __str__(self):
         return self.board_to_string(1)
 board1 = Board(1)
-
-for x in range(8):
-    for y in range(8):
-        board1.click((x,y))
-        print(board1)
+board1.click((0,0))
+print(board1.board_to_string(2))
+print(board1)
