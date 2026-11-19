@@ -27,9 +27,14 @@ class Board:
     def bomb_clicked(self,bomb_cord:tuple):
         print(f"Game over there was a bomb at {bomb_cord}")
 
-    def reveal_tile(self,tile:tuple):
-        if self.board[tile[0],tile[1]].bombs_nearby != -1:
-            self.player_facing_board[tile[0],tile[1]] = self.board[tile[0],tile[1]].bombs_nearby
+    def reveal_tile(self,tile:tuple,isFlag = False):
+        if self.board[tile[0],tile[1]].bombs_nearby != -1 and not isFlag:
+            if self.board[tile[0],tile[1]].bombs_nearby == 0:
+                self.player_facing_board[tile[0],tile[1]] = "."
+            else:
+                self.player_facing_board[tile[0],tile[1]] = self.board[tile[0],tile[1]].bombs_nearby
+        else:
+            self.player_facing_board[tile[0],tile[1]] = "⚐"
 
     def propagate_tiles(self, tile_clicked:tuple):
         tile_to_check = self.board[tile_clicked[0],tile_clicked[1]]
@@ -42,14 +47,26 @@ class Board:
             if in_bounds:
                 if is_zero and not self.board[tile_in_dir[0],tile_in_dir[1]].isClicked:
                     self.propagate_tiles(tile_in_dir)
-                    
-                
 
     def click(self,tile_cords:tuple):
         if self.turn_number == 0:
-            self._gen_board(tile_cords)
-        self.propagate_tiles(tile_cords)
+                    self._gen_board(tile_cords)
+        if not self.isFlag:
+            if  not self.board[tile_cords[0],tile_cords[1]].isFlagged:
+                self.isFlag = False
+                self.propagate_tiles(tile_cords)
+        else:
+            if not self.board[tile_cords[0],tile_cords[1]].isClicked and not self.board[tile_cords[0],tile_cords[1]].isFlagged:
+                self.board[tile_cords[0],tile_cords[1]].isFlagged = True
+                self.player_facing_board[tile_cords[0],tile_cords[1]] = "⚐"
+
         self.turn_number += 1
+
+    def change_mode(self):
+        if self.isFlag:
+            self.isFlag = False
+        else:
+            self.isFlag = True
 
     @staticmethod
     def bombs_nearby(bomb_cords:list, cord_of_tile:tuple):
@@ -133,10 +150,19 @@ class Board:
         self.bomb_pos = None
         self.turn_number = 0
         self.game_over = False
+        self.isFlag = False
 
     def board_to_string(self,mode:int = 1):
         if mode == 1:
-            return str(self.player_facing_board)
+            return_list = []
+            for x in self.board:
+                row_list = []
+                for y in x:
+
+                    row_list.append(self.player_facing_board[y.x,y.y])
+                return_list.append(row_list)
+            return str(np.array(return_list))
+                    
         else:# mode == 2
             return_list = []
             for row in self.board:
@@ -157,5 +183,10 @@ class Board:
         return self.board_to_string(1)
 board1 = Board(1)
 board1.click((0,0))
-print(board1.board_to_string(2))
+print(board1)
+board1.change_mode()
+board1.click((7,7))
+print(board1)
+board1.click((6,7))
+board1.click((7,6))
 print(board1)
