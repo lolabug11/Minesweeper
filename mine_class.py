@@ -181,12 +181,3 @@ class Board:
 
     def __str__(self):
         return self.board_to_string(1)
-board1 = Board(1)
-board1.click((0,0))
-print(board1)
-board1.change_mode()
-board1.click((7,7))
-print(board1)
-board1.click((6,7))
-board1.click((7,6))
-print(board1)
